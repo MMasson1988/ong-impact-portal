@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Réalisations — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="container page">
+  <h1>Réalisations internes</h1>
+  <div class="card-grid">
+    {% for a in achievements %}
+    <article class="card"><h2>{{ a.title }}</h2><p>{{ a.description|truncatewords:40 }}</p><p class="meta">{{ a.date|date:"d/m/Y" }}</p></article>
+    {% empty %}<p>Aucune réalisation publiée.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

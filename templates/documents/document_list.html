@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Documents — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="container page">
+  <h1>Documents institutionnels</h1>
+  <ul class="doc-list">
+    {% for doc in documents %}
+    <li><a href="{% url 'documents:detail' doc.pk %}">{{ doc.title }}</a> — {{ doc.get_document_type_display }}</li>
+    {% empty %}<li>Aucun document public.</li>{% endfor %}
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide technique — ONG Impact Portal</title>
+  <style>
+    :root { --primary: #0d6b5c; --bg: #f4f7f6; --code-bg: #1e293b; --code-fg: #e2e8f0; }
+    body { font-family: "Segoe UI", system-ui, sans-serif; line-height: 1.65; color: #1a2b28; background: var(--bg); margin: 0; }
+    header { background: linear-gradient(135deg, var(--primary), #094a40); color: #fff; padding: 2.5rem 1.5rem; }
+    header h1 { margin: 0 0 0.5rem; }
+    main { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+    section { background: #fff; border-radius: 10px; padding: 1.5rem 2rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+    h2 { color: var(--primary); border-bottom: 2px solid #e2e8e6; padding-bottom: 0.5rem; }
+    h3 { margin-top: 1.5rem; }
+    pre { background: var(--code-bg); color: var(--code-fg); padding: 1rem 1.25rem; border-radius: 8px; overflow-x: auto; font-size: 0.88rem; }
+    code { font-family: Consolas, "Courier New", monospace; }
+    p code { background: #e8f0ee; color: #0d4a40; padding: 0.15rem 0.4rem; border-radius: 4px; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    th, td { border: 1px solid #dde4e2; padding: 0.6rem 0.8rem; text-align: left; }
+    th { background: #e8f2f0; }
+    nav.toc { background: #fff; padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
+    nav.toc ol { margin: 0; padding-left: 1.25rem; }
+    .note { background: #fef9c3; border-left: 4px solid #ca8a04; padding: 0.75rem 1rem; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ONG Impact Portal</h1>
+    <p>Guide technique HTML — création, structure, sécurité et déploiement Django</p>
+  </header>
+
+  <main>
+    <nav class="toc" aria-label="Table des matières">
+      <strong>Sommaire</strong>
+      <ol>
+        <li><a href="#concept">Concept &amp; architecture</a></li>
+        <li><a href="#prerequis">Prérequis</a></li>
+        <li><a href="#creation">Création du projet Django</a></li>
+        <li><a href="#structure">Structure des dossiers</a></li>
+        <li><a href="#apps">Applications &amp; modèles</a></li>
+        <li><a href="#auth">Authentification &amp; rôles</a></li>
+        <li><a href="#prive">Fichiers médias privés</a></li>
+        <li><a href="#settings">Configuration settings</a></li>
+        <li><a href="#env">Variables d'environnement</a></li>
+        <li><a href="#git">Versioning Git</a></li>
+        <li><a href="#cicd">CI/CD GitHub Actions</a></li>
+        <li><a href="#deploy">Déploiement production</a></li>
+      </ol>
+    </nav>
+
+    <section id="concept">
+      <h2>1. Concept &amp; architecture</h2>
+      <p><strong>Nom :</strong> ONG Impact Portal — portail institutionnel pour centraliser KPI, médias, documents et espace staff.</p>
+      <table>
+        <tr><th>Couche</th><th>Technologie</th></tr>
+        <tr><td>Framework</td><td>Django 5.x</td></tr>
+        <tr><td>Base dev</td><td>SQLite</td></tr>
+        <tr><td>Base prod</td><td>PostgreSQL</td></tr>
+        <tr><td>Static files</td><td>WhiteNoise + collectstatic</td></tr>
+        <tr><td>Serveur WSGI</td><td>Gunicorn</td></tr>
+      </table>
+    </section>
+
+    <section id="prerequis">
+      <h2>2. Prérequis</h2>
+      <pre><code>python --version   # 3.11+
+git --version
+pip install --upgrade pip</code></pre>
+    </section>
+
+    <section id="creation">
+      <h2>3. Création du projet Django</h2>
+      <h3>3.1 Arborescence initiale</h3>
+      <pre><code>mkdir ong-impact-portal &amp;&amp; cd ong-impact-portal
+python -m venv .venv
+# Windows: .\.venv\Scripts\activate
+# Linux:   source .venv/bin/activate
+pip install "Django&gt;=5.1" python-decouple whitenoise Pillow psycopg2-binary gunicorn</code></pre>
+
+      <h3>3.2 Projet &amp; applications</h3>
+      <pre><code>django-admin startproject config .
+mkdir apps
+python manage.py startapp accounts
+# Déplacer dans apps/ et renommer name = "apps.accounts" dans apps.py
+
+# Créer les apps métier :
+# apps.core, apps.programs, apps.content, apps.documents, apps.dashboards</code></pre>
+
+      <h3>3.3 manage.py — module settings développement</h3>
+      <pre><code>#!/usr/bin/env python
+import os
+import sys
+
+def main():
+    os.environ.setdefault(
+        "DJANGO_SETTINGS_MODULE",
+        "config.settings.development",
+    )
+    from django.core.management import execute_from_command_line
+    execute_from_command_line(sys.argv)
+
+if __name__ == "__main__":
+    main()</code></pre>
+
+      <h3>3.4 Première migration (ordre important)</h3>
+      <pre><code>cp .env.example .env
+# Définir SECRET_KEY, DEBUG=True
+
+python manage.py makemigrations accounts
+python manage.py makemigrations
+python manage.py migrate
+python manage.py setup_roles
+python manage.py createsuperuser
+python manage.py runserver</code></pre>
+      <div class="note">
+        <strong>Attention :</strong> définir <code>AUTH_USER_MODEL = "accounts.User"</code> avant la première migration.
+        Si la base a été créée sans cela, supprimez <code>db.sqlite3</code> et relancez les migrations.
+      </div>
+    </section>
+
+    <section id="structure">
+      <h2>4. Structure des dossiers</h2>
+      <pre><code>ong-impact-portal/
+├── config/
+│   ├── settings/
+│   │   ├── base.py
+│   │   ├── development.py
+│   │   └── production.py
+│   ├── urls.py
+│   └── wsgi.py
+├── apps/
+│   ├── accounts/
+│   ├── core/
+│   ├── programs/
+│   ├── content/
+│   ├── documents/
+│   └── dashboards/
+├── templates/
+├── static/
+├── media/
+├── private_media/
+├── .github/workflows/
+├── requirements.txt
+├── .env.example
+└── manage.py</code></pre>
+    </section>
+
+    <section id="apps">
+      <h2>5. Applications &amp; modèles principaux</h2>
+      <h3>Programme (extrait)</h3>
+      <pre><code>class Program(models.Model):
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
+    summary = models.TextField()
+    is_published = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)</code></pre>
+
+      <h3>Document avec fichier privé</h3>
+      <pre><code>class Document(models.Model):
+    title = models.CharField(max_length=200)
+    file = models.FileField(upload_to="documents/", blank=True, null=True)
+    private_file = models.FileField(upload_to="private/", blank=True, null=True)
+    is_private = models.BooleanField(default=False)</code></pre>
+
+      <h3>URLs racine (config/urls.py)</h3>
+      <pre><code>urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("", include("apps.core.urls")),
+    path("comptes/", include("apps.accounts.urls")),
+    path("programmes/", include("apps.programs.urls")),
+    path("contenus/", include("apps.content.urls")),
+    path("documents/", include("apps.documents.urls")),
+    path("tableaux-de-bord/", include("apps.dashboards.urls")),
+    path("fichiers-prives/", include("apps.documents.urls_private")),
+]</code></pre>
+    </section>
+
+    <section id="auth">
+      <h2>6. Authentification &amp; rôles</h2>
+      <pre><code># config/settings/base.py
+AUTH_USER_MODEL = "accounts.User"
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "dashboards:staff_home"
+
+# Mixin contrôle d'accès staff
+class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    def test_func(self):
+        user = self.request.user
+        return user.is_authenticated and (
+            user.is_superuser
+            or user.groups.filter(
+                name__in=["SuperAdmin", "Communicator", "ProgramManager", "Staff"]
+            ).exists()
+        )</code></pre>
+      <pre><code># Management command
+python manage.py setup_roles</code></pre>
+    </section>
+
+    <section id="prive">
+      <h2>7. Protection des médias privés</h2>
+      <pre><code># Ne PAS monter private_media/ en URL statique publique.
+
+class PrivateFileDownloadView(StaffRequiredMixin, View):
+    def get(self, request, pk):
+        document = get_object_or_404(
+            Document, pk=pk, is_private=True, is_published=True
+        )
+        return FileResponse(
+            document.private_file.open("rb"),
+            as_attachment=True,
+            filename=document.private_file.name.split("/")[-1],
+        )</code></pre>
+    </section>
+
+    <section id="settings">
+      <h2>8. Configuration settings</h2>
+      <h3>base.py — médias &amp; static</h3>
+      <pre><code>MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+PRIVATE_MEDIA_ROOT = BASE_DIR / "private_media"
+
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    ...
+]</code></pre>
+
+      <h3>production.py — sécurité</h3>
+      <pre><code>DEBUG = False
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ["https://votre-domaine.org"]
+ALLOWED_HOSTS = ["votre-domaine.org"]</code></pre>
+    </section>
+
+    <section id="env">
+      <h2>9. Variables d'environnement (.env.example)</h2>
+      <pre><code>SECRET_KEY=change-me
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+DJANGO_SETTINGS_MODULE=config.settings.development
+
+# Production PostgreSQL
+# DB_ENGINE=django.db.backends.postgresql
+# DB_NAME=ong_impact_portal
+# DB_USER=portal_user
+# DB_PASSWORD=secret
+# DB_HOST=localhost
+# DB_PORT=5432</code></pre>
+    </section>
+
+    <section id="git">
+      <h2>10. Versioning Git</h2>
+      <pre><code>git init
+git add .
+git commit -m "feat: initial ONG Impact Portal kit"
+git branch -M main
+git remote add origin https://github.com/votre-org/ong-impact-portal.git
+git push -u origin main
+
+# Branches
+git checkout -b develop
+git checkout -b feature/galerie-v2
+
+# Tags
+git tag -a v0.1.0 -m "Release 0.1.0"
+git push origin v0.1.0</code></pre>
+      <p>Convention de commits : <code>feat:</code>, <code>fix:</code>, <code>docs:</code>, <code>chore:</code>, <code>security:</code>.</p>
+    </section>
+
+    <section id="cicd">
+      <h2>11. CI/CD — GitHub Actions</h2>
+      <pre><code># .github/workflows/ci.yml
+- run: python manage.py check
+- run: python manage.py makemigrations --check --dry-run
+- run: python manage.py migrate --noinput
+
+# .github/workflows/deploy.yml
+- run: python manage.py collectstatic --noinput
+- run: curl -X POST "$RENDER_DEPLOY_HOOK"</code></pre>
+    </section>
+
+    <section id="deploy">
+      <h2>12. Déploiement production</h2>
+      <h3>Render / VPS — séquence</h3>
+      <pre><code>export DJANGO_SETTINGS_MODULE=config.settings.production
+pip install -r requirements.txt
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput
+python manage.py setup_roles
+gunicorn config.wsgi:application --bind 0.0.0.0:8000
+# ou: systemctl restart gunicorn-ong-portal</code></pre>
+      <p>Procfile Heroku/Render : <code>web: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT</code></p>
+      <p>Documentation complète : voir <code>README.md</code> à la racine du dépôt.</p>
+    </section>
+  </main>
+</body>
+</html>

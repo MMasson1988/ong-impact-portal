@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Indicateurs — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="container page">
+  <h1>Indicateurs de performance</h1>
+  <table class="data-table">
+    <thead><tr><th>Indicateur</th><th>Valeur</th><th>Programme</th><th>Période</th></tr></thead>
+    <tbody>
+      {% for ind in indicators %}
+      <tr><td>{{ ind.label }}</td><td>{{ ind.value }} {{ ind.unit }}</td><td>{{ ind.program|default:"—" }}</td><td>{{ ind.period|default:"—" }}</td></tr>
+      {% empty %}<tr><td colspan="4">Aucun indicateur.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

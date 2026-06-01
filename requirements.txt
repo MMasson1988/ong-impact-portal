@@ -1,0 +1,17 @@
+# Core
+Django>=5.1,<5.3
+python-decouple>=3.8
+whitenoise>=6.7
+
+# Database (production)
+psycopg2-binary>=2.9.9
+
+# Images & files
+Pillow>=10.4.0
+
+# Security & utilities
+django-environ>=0.11.2
+gunicorn>=22.0.0
+
+# Development (optional — install with: pip install -r requirements-dev.txt)
+# django-debug-toolbar>=4.4

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Connexion staff — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="container page auth-page">
+  <h1>Espace staff</h1>
+  <form method="post" class="auth-form">
+    {% csrf_token %}
+    {% if form.errors %}<p class="error">Identifiants incorrects.</p>{% endif %}
+    <label for="id_username">Identifiant</label>
+    <input type="text" name="username" id="id_username" required autofocus>
+    <label for="id_password">Mot de passe</label>
+    <input type="password" name="password" id="id_password" required>
+    <button type="submit" class="btn btn-primary">Se connecter</button>
+  </form>
+</div>
+{% endblock %}

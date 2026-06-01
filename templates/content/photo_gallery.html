@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Galerie — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="container page">
+  <h1>Galerie photos</h1>
+  <div class="photo-grid">
+    {% for photo in photos %}
+    <figure><img src="{{ photo.image.url }}" alt="{{ photo.title }}"><figcaption>{{ photo.title }}</figcaption></figure>
+    {% empty %}<p>Aucune photo.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

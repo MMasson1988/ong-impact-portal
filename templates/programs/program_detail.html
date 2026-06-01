@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ program.name }} — {{ site_name }}{% endblock %}
+{% block content %}
+<article class="container page">
+  <h1>{{ program.name }}</h1>
+  {% if program.cover_image %}<img class="cover" src="{{ program.cover_image.url }}" alt="">{% endif %}
+  <p class="lead">{{ program.summary }}</p>
+  <div class="prose">{{ program.description|linebreaks }}</div>
+  <h2>Indicateurs du programme</h2>
+  <div class="kpi-grid">
+    {% for ind in indicators %}
+    <div class="kpi-card"><span class="kpi-value">{{ ind.value }} {{ ind.unit }}</span><span class="kpi-label">{{ ind.label }}</span></div>
+    {% empty %}<p>Aucun indicateur public.</p>{% endfor %}
+  </div>
+</article>
+{% endblock %}

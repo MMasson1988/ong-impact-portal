@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="container page staff-area">
+  <h1>Tableau de bord</h1>
+  <div class="dashboard-grid">
+    {% for w in widgets %}
+    <div class="dashboard-widget"><h3>{{ w.title }}</h3><p>Type : {{ w.get_widget_type_display }}</p></div>
+    {% empty %}<p>Configurez des widgets dans l'administration.</p>{% endfor %}
+  </div>
+  <h2>Documents privés</h2>
+  <ul>{% for d in private_documents %}<li><a href="{% url 'documents_private:download' d.pk %}">{{ d.title }}</a></li>{% endfor %}</ul>
+</div>
+{% endblock %}

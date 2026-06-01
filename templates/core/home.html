@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Accueil — {{ site_name }}{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <h1>{{ site_name }}</h1>
+    <p class="lead">{{ site_settings.tagline|default:"Centraliser l'impact, partager la connaissance institutionnelle." }}</p>
+  </div>
+</section>
+
+<section class="container section">
+  <h2>Programmes phares</h2>
+  <div class="card-grid">
+    {% for program in featured_programs %}
+    <article class="card">
+      {% if program.cover_image %}<img src="{{ program.cover_image.url }}" alt="">{% endif %}
+      <h3><a href="{{ program.get_absolute_url }}">{{ program.name }}</a></h3>
+      <p>{{ program.summary|truncatewords:25 }}</p>
+    </article>
+    {% empty %}
+    <p>Aucun programme mis en avant.</p>
+    {% endfor %}
+  </div>
+  <p><a href="{% url 'programs:list' %}">Voir tous les programmes →</a></p>
+</section>
+
+<section class="container section kpi-strip">
+  <h2>Indicateurs clés</h2>
+  <div class="kpi-grid">
+    {% for ind in key_indicators %}
+    <div class="kpi-card">
+      <span class="kpi-value">{{ ind.value }}{% if ind.unit %} {{ ind.unit }}{% endif %}</span>
+      <span class="kpi-label">{{ ind.label }}</span>
+    </div>
+    {% empty %}
+    <p>Indicateurs à configurer dans l'administration.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="container section">
+  <h2>Actualités</h2>
+  <ul class="news-list">
+    {% for item in latest_news %}
+    <li><a href="{% url 'content:news_detail' item.slug %}">{{ item.title }}</a> — {{ item.published_at|date:"d/m/Y" }}</li>
+    {% empty %}<li>Aucune actualité publiée.</li>{% endfor %}
+  </ul>
+</section>
+
+<section class="container section">
+  <h2>Galerie récente</h2>
+  <div class="photo-grid">
+    {% for photo in recent_photos %}
+    <figure><img src="{{ photo.image.url }}" alt="{{ photo.title }}"><figcaption>{{ photo.title }}</figcaption></figure>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

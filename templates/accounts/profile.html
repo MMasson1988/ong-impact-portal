@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Mon profil — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="container page">
+  <h1>Mon profil</h1>
+  <p><strong>{{ profile_user.get_full_name|default:profile_user.username }}</strong></p>
+  <p>{{ profile_user.job_title }} — {{ profile_user.department }}</p>
+  <p>Rôle : {{ profile_user.get_role_display }}</p>
+</div>
+{% endblock %}

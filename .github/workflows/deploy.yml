@@ -1,0 +1,56 @@
+# Déploiement automatique — exemple Render.com (gratuit/tier modeste)
+# Adaptez les secrets GitHub : RENDER_DEPLOY_HOOK, ou utilisez Railway/Fly.io
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Collect static files (validation build)
+        env:
+          SECRET_KEY: build-only-secret
+          DEBUG: "False"
+          ALLOWED_HOSTS: example.org
+          DJANGO_SETTINGS_MODULE: config.settings.development
+        run: |
+          python manage.py collectstatic --noinput
+
+      # Option A : webhook Render (Deploy Hook URL dans les secrets)
+      - name: Trigger Render deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK != '' }}
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK"
+
+      # Option B : SSH vers VPS (décommenter et configurer secrets)
+      # - name: Deploy via SSH
+      #   uses: appleboy/ssh-action@v1.0.3
+      #   with:
+      #     host: ${{ secrets.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USER }}
+      #     key: ${{ secrets.SSH_KEY }}
+      #     script: |
+      #       cd /var/www/ong-impact-portal
+      #       git pull origin main
+      #       source .venv/bin/activate
+      #       pip install -r requirements.txt
+      #       export DJANGO_SETTINGS_MODULE=config.settings.production
+      #       python manage.py migrate --noinput
+      #       python manage.py collectstatic --noinput
+      #       sudo systemctl restart gunicorn-ong-portal

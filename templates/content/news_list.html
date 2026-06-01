@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Actualités — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="container page">
+  <h1>Actualités</h1>
+  <ul class="news-list">
+    {% for item in news_list %}
+    <li><a href="{% url 'content:news_detail' item.slug %}">{{ item.title }}</a> — {{ item.published_at|date:"d/m/Y" }}{% if item.is_staff_only %} <span class="badge">Staff</span>{% endif %}</li>
+    {% empty %}<li>Aucune actualité.</li>{% endfor %}
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Espace staff — {{ site_name }}{% endblock %}
+{% block content %}
+<div class="container page staff-area">
+  <h1>Bienvenue, {{ user.get_short_name|default:user.username }}</h1>
+  <div class="stats-row">
+    <div class="stat-card"><span class="stat-num">{{ program_count }}</span><span>Programmes</span></div>
+    <div class="stat-card"><span class="stat-num">{{ indicator_count }}</span><span>Indicateurs</span></div>
+    <div class="stat-card"><span class="stat-num">{{ document_count }}</span><span>Documents</span></div>
+  </div>
+  <p><a href="{% url 'dashboards:staff_dashboard' %}">Tableau de bord →</a> · <a href="{% url 'documents:staff_list' %}">Documents staff</a> · <a href="{% url 'accounts:profile' %}">Profil</a> · <a href="/admin/">Administration</a></p>
+  <h2>Actualités récentes</h2>
+  <ul>{% for n in staff_news %}<li>{{ n.title }}</li>{% endfor %}</ul>
+</div>
+{% endblock %}
