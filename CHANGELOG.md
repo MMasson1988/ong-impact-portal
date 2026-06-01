@@ -17,5 +17,5 @@ versionnement [Semantic Versioning](https://semver.org/lang/fr/).
 ### Added
 - Première version du portail institutionnel ONG (`ong-impact-portal`).
 
-[Unreleased]: https://github.com/votre-org/ong-impact-portal/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/votre-org/ong-impact-portal/releases/tag/v0.1.0
+[Unreleased]: https://github.com/MMasson1988/ong-impact-portal/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/MMasson1988/ong-impact-portal/releases/tag/v0.1.0

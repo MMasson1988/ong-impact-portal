@@ -24,7 +24,7 @@ Voir aussi : [docs/CONCEPT.md](docs/CONCEPT.md) et [docs/guide-technique.html](d
 ### 1. Cloner le dépôt
 
 ```bash
-git clone https://github.com/votre-org/ong-impact-portal.git
+git clone https://github.com/MMasson1988/ong-impact-portal.git
 cd ong-impact-portal
 ```
 
