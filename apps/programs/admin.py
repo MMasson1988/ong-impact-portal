@@ -1,22 +1,17 @@
 from django.contrib import admin
+from .models import Program, Project
 
-from .models import Indicator, Program
-
-
-class IndicatorInline(admin.TabularInline):
-    model = Indicator
+class ProjectInline(admin.TabularInline):
+    model = Project
     extra = 1
-
 
 @admin.register(Program)
 class ProgramAdmin(admin.ModelAdmin):
-    list_display = ("name", "sector", "region", "is_published", "is_featured")
-    list_filter = ("is_published", "is_featured", "sector")
-    prepopulated_fields = {"slug": ("name",)}
-    inlines = [IndicatorInline]
+    list_display = ('title', 'status', 'start_date', 'is_public', 'is_featured')
+    prepopulated_fields = {'slug': ('title',)}
+    inlines = [ProjectInline]
 
-
-@admin.register(Indicator)
-class IndicatorAdmin(admin.ModelAdmin):
-    list_display = ("label", "value", "unit", "program", "is_public", "is_featured")
-    list_filter = ("is_public", "is_featured", "program")
+@admin.register(Project)
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('title', 'program', 'location', 'beneficiaries_count')
+    prepopulated_fields = {'slug': ('title',)}

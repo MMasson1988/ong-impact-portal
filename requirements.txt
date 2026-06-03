@@ -1,17 +1,14 @@
-# Core
-Django>=5.1,<5.3
-python-decouple>=3.8
-whitenoise>=6.7
-
-# Database (production)
-psycopg2-binary>=2.9.9
-
-# Images & files
-Pillow>=10.4.0
-
-# Security & utilities
-django-environ>=0.11.2
-gunicorn>=22.0.0
-
-# Development (optional — install with: pip install -r requirements-dev.txt)
-# django-debug-toolbar>=4.4
+Django==5.1.4
+psycopg2-binary==2.9.10
+python-decouple==3.8
+Pillow==11.0.0
+django-crispy-forms==2.3
+crispy-bootstrap5==2024.10
+django-storages==1.14.4
+boto3==1.35.0
+django-allauth==65.3.0
+django-filter==24.3
+django-axes==7.0.0
+whitenoise==6.8.2
+gunicorn==23.0.0
+sentry-sdk[django]==2.19.0

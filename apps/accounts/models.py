@@ -1,43 +1,21 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from django.contrib.auth.models import AbstractUser
+from django.utils.translation import gettext_lazy as _
 
 class User(AbstractUser):
-    """Utilisateur staff avec profil institutionnel."""
-
     class Role(models.TextChoices):
-        SUPER_ADMIN = "super_admin", "Super administrateur"
-        COMMUNICATOR = "communicator", "Communication"
-        PROGRAM_MANAGER = "program_manager", "Responsable programme"
-        STAFF = "staff", "Personnel"
-
-    role = models.CharField(
-        max_length=32,
-        choices=Role.choices,
-        default=Role.STAFF,
-    )
-    job_title = models.CharField("Fonction", max_length=120, blank=True)
-    department = models.CharField("Service", max_length=120, blank=True)
-    phone = models.CharField("Téléphone", max_length=30, blank=True)
-    avatar = models.ImageField("Photo", upload_to="avatars/", blank=True, null=True)
-
+        SUPER_ADMIN = 'super_admin', _('Super Administrateur')
+        MANAGER     = 'manager',     _('Manager ONG')
+        STAFF       = 'staff',       _('Staff Terrain')
+        PARTNER     = 'partner',     _('Partenaire')
+        PUBLIC      = 'public',      _('Visiteur')
+    role     = models.CharField(max_length=20, choices=Role.choices, default=Role.PUBLIC)
+    phone    = models.CharField(max_length=20, blank=True)
+    position = models.CharField(max_length=100, blank=True)
+    avatar   = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    bio      = models.TextField(blank=True)
     class Meta:
-        verbose_name = "utilisateur"
-        verbose_name_plural = "utilisateurs"
-
-    def __str__(self):
-        return self.get_full_name() or self.username
-
-    @property
-    def is_staff_member(self):
-        return self.is_active and (
-            self.is_superuser
-            or self.groups.filter(
-                name__in=[
-                    "SuperAdmin",
-                    "Communicator",
-                    "ProgramManager",
-                    "Staff",
-                ]
-            ).exists()
-        )
+        verbose_name = _('Utilisateur')
+        verbose_name_plural = _('Utilisateurs')
+    def is_staff_member(self) -> bool:
+        return self.role in [self.Role.SUPER_ADMIN, self.Role.MANAGER, self.Role.STAFF]

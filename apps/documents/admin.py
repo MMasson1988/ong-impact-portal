@@ -1,10 +1,11 @@
 from django.contrib import admin
+from .models import Document, DocumentCategory
 
-from .models import Document
-
+@admin.register(DocumentCategory)
+class DocumentCategoryAdmin(admin.ModelAdmin):
+    prepopulated_fields = {'slug': ('name',)}
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ("title", "document_type", "is_published", "is_private", "program")
-    list_filter = ("document_type", "is_published", "is_private", "program")
-    search_fields = ("title", "summary")
+    list_display = ('title', 'category', 'access_level', 'version', 'download_count')
+    list_filter  = ('access_level', 'category')

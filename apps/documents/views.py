@@ -1,54 +1,22 @@
-from django.http import FileResponse, Http404
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
-from django.views.generic import DetailView, ListView
-
-from apps.accounts.mixins import StaffRequiredMixin
-
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.decorators import login_required
 from .models import Document
 
+ACCESS_RULES = {
+    'public':       lambda user: True,
+    'partner':      lambda user: user.is_authenticated and user.role in ['partner','staff','manager','super_admin'],
+    'staff':        lambda user: user.is_authenticated and user.is_staff_member(),
+    'confidential': lambda user: user.is_authenticated and user.role in ['manager','super_admin'],
+}
 
-class DocumentListView(ListView):
-    model = Document
-    template_name = "documents/document_list.html"
-    context_object_name = "documents"
-    paginate_by = 15
-
-    def get_queryset(self):
-        return Document.objects.filter(is_published=True, is_private=False)
-
-
-class DocumentDetailView(DetailView):
-    model = Document
-    template_name = "documents/document_detail.html"
-    context_object_name = "document"
-
-    def get_queryset(self):
-        return Document.objects.filter(is_published=True, is_private=False)
-
-
-class StaffDocumentListView(StaffRequiredMixin, ListView):
-    model = Document
-    template_name = "documents/staff_document_list.html"
-    context_object_name = "documents"
-    paginate_by = 20
-
-    def get_queryset(self):
-        return Document.objects.filter(is_published=True)
-
-
-class PrivateFileDownloadView(StaffRequiredMixin, DetailView):
-    """Sert les fichiers privés après contrôle d'accès — jamais en URL directe."""
-
-    model = Document
-
-    def get(self, request, *args, **kwargs):
-        document = get_object_or_404(
-            Document,
-            pk=kwargs["pk"],
-            is_published=True,
-            is_private=True,
-        )
-        f = document.private_file
-        if not f:
-            raise Http404("Fichier introuvable.")
-        return FileResponse(f.open("rb"), as_attachment=True, filename=f.name.split("/")[-1])
+@login_required
+def serve_document(request, pk):
+    doc = get_object_or_404(Document, pk=pk)
+    check = ACCESS_RULES.get(doc.access_level, lambda u: False)
+    if not check(request.user): raise PermissionDenied('Acces non autorise.')
+    doc.download_count += 1
+    doc.save(update_fields=['download_count'])
+    return FileResponse(doc.file.open('rb'), as_attachment=True,
+                        filename=doc.file.name.split('/')[-1])

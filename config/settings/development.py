@@ -1,15 +1,6 @@
-"""Paramètres développement — SQLite, DEBUG activé."""
-from .base import *  # noqa: F403
+from .base import *  # noqa
 
 DEBUG = True
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",  # noqa: F405
-    }
-}
-
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-INTERNAL_IPS = ["127.0.0.1"]
+DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3'}}
+INSTALLED_APPS += ['debug_toolbar']
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
